@@ -21,6 +21,8 @@ int earthquakeFlag = 0;
 
 const unsigned long updateIntervel = 5000;
 unsigned long prevTime = 0;
+int waterLevel =0;
+int moistureLevel=0;
 void setup() {
     Serial.begin(9600);
     sim800.begin(9600);
@@ -43,8 +45,8 @@ void setup() {
 void loop() {
   unsigned long currentTime = millis();
   if (currentTime - prevTime >= updateIntervel){
-    int waterLevel = analogRead(WATER_SENSOR);
-    int moistureLevel = digitalRead(MOISTURE_SENSOR);  // HIGH = Dry, LOW = Wet
+    waterLevel = analogRead(WATER_SENSOR);
+    moistureLevel = digitalRead(MOISTURE_SENSOR);  // HIGH = Dry, LOW = Wet
     sensors_event_t event;
     accel.getEvent(&event);
 
@@ -79,18 +81,21 @@ void loop() {
     // Earthquake Alert with Adjustable Thresholds
     if (xAccel > X_THRESHOLD || yAccel > Y_THRESHOLD || zAccel > Z_THRESHOLD) {
         // Serial.println("🚨 ALERT: Earthquake Detected!");
-        earthquakeFlag = 1
+        earthquakeFlag = 1;
         sendSMS("Earthquake Alert: Strong Ground Movement!");
     }else{
       earthquakeFlag =0;
     }
-    previousTime = currentTime;
+    prevTime = currentTime;
   }
     
     
     serialMsg = String(waterLevel)+","+String(map(moistureLevel, 0, 1, 0, 100))+","+String(earthquakeFlag);
     Serial.println(serialMsg);
     delay(500);  // Delay before next reading
+    if(earthquakeFlag){
+      makeCall();
+    }
 }
 
 void sendSMS(String message) {
@@ -102,5 +107,13 @@ void sendSMS(String message) {
     sim800.println(message);
     delay(1000);
     sim800.write(26);  // End SMS with Ctrl+Z
+    delay(1000);
+}
+void makeCall() {
+    sim800.println("AT");  
+    delay(1000);
+    sim800.println("ATD+ +919876543210;");  // Replace with actual phone number
+    delay(10000);
+    sim800.println("ATH");
     delay(1000);
 }
