@@ -112,7 +112,7 @@ void sendSMS(String message) {
 void makeCall() {
     sim800.println("AT");  
     delay(1000);
-    sim800.println("ATD+ +919876543210;");  // Replace with actual phone number
+    sim800.println("ATD+ +918547043528;");  // Replace with actual phone number
     delay(10000);
     sim800.println("ATH");
     delay(1000);
